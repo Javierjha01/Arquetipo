@@ -2,18 +2,17 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
-const db = require('./conexion'); // Importar la conexión a la base de datos
-
+const db = require('./conexion'); 
 const app = express();
 const port = 3000;
 
-// Middleware para parsear el cuerpo de las solicitudes
+
 app.use(bodyParser.json());
 
 // Clave secreta para JWT
 const SECRET_KEY = 'mysecretkey';
 
-// Ruta para registrar un nuevo usuario
+// REGISTRAR-----------------------------------------------------------------
 app.post('/register', (req, res) => {
     const { username, password } = req.body;
 
@@ -32,7 +31,7 @@ app.post('/register', (req, res) => {
     });
 });
 
-// Ruta para login
+// INGRESAR-----------------------------------------------------------------
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
 
