@@ -2,18 +2,27 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const db = require('./conexion'); 
 const app = express();
 const port = 3000;
 
 
 app.use(bodyParser.json());
+app.use(cors());
+
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*'); // Permitir todos los orígenes
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // Métodos permitidos
+    res.header('Access-Control-Allow-Headers', 'Content-Type'); // Cabeceras permitidas
+    next();
+  });
 
 // Clave secreta para JWT
 const SECRET_KEY = 'mysecretkey';
 
-// REGISTRAR-----------------------------------------------------------------
-app.post('/register', (req, res) => {
+// REGISTRAR USUARIO PARA LOGIN-----------------------------------------------------------------
+app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
 
     // Encriptar la contraseña antes de guardarla
@@ -31,8 +40,8 @@ app.post('/register', (req, res) => {
     });
 });
 
-// INGRESAR-----------------------------------------------------------------
-app.post('/login', (req, res) => {
+// LOGIN-----------------------------------------------------------------
+app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
 
     // Buscar el usuario en la base de datos
@@ -65,8 +74,8 @@ app.post('/login', (req, res) => {
     });
 });
 
-// Ruta protegida que requiere autenticación
-app.get('/protected', (req, res) => {
+// Ruta protegida que requiere autenticación------------------------------------------
+app.get('/api/protected', (req, res) => {
     const token = req.headers['x-access-token'];
 
     if (!token) {
@@ -82,6 +91,79 @@ app.get('/protected', (req, res) => {
         res.status(200).send('Acceso permitido a la ruta protegida');
     });
 });
+
+//MOSTRAR TODOS LOS REGISTROS--------------------------------------------------
+app.get('/api/proyectos', function(req, res){
+    db.query('SELECT * FROM proyectos', function(error, proyectos){
+        if(error){
+            //console.log(error);
+            return res.status(404).send('Proyectos no encontrados');
+        }else{
+            res.status(200).send(proyectos);
+        }
+    })
+})
+//MOSTRAR UN SOLO REGISTRO--------------------------------------------------
+app.get('/api/proyectos/:id', function(req, res){
+    db.query('SELECT * FROM proyectos where id = ?', [req.params.id], function(error, proyecto){
+        if(error){
+            return res.status(404).send('Proyecto no encontrado');
+        }else{
+            res.status(200).send(proyecto);
+        }
+    })
+})
+
+//INSERTAR UN REGISTRO--------------------------------------------------
+app.post('/api/proyectos', function(req, res){
+    const {nombre, descripcion, fecha_inicio, fecha_fin, responsables} = req.body;
+    
+    const sql = 'INSERT INTO proyectos(nombre, descripcion, fecha_inicio, fecha_fin, responsables) values (?, ?, ?, ?, ?)';
+
+    db.query(sql, [nombre, descripcion, fecha_inicio, fecha_fin, responsables], function(error, registro){
+        if(error){
+            //console.log(error)
+            return res.status(404).send('No se pudo registrar el proyecto');
+        }
+        else{
+            res.status(200).send(registro);
+            //console.log(sql)
+        }
+    })
+})
+
+//ACTUALIZAR REGISTRO------------------------------------------------------------------
+app.put('/api/proyectos/:id', function(req, res){
+    let id = req.params.id;
+    let nombre = req.body.nombre;
+    let descripcion = req.body.descripcion;
+    let fecha_inicio = req.body.fecha_inicio;
+    let fecha_fin = req.body.fecha_fin;
+    let responsables = req.body.responsables;
+    let sql = "UPDATE proyectos set nombre = ?, descripcion = ?, fecha_inicio = ?, fecha_fin = ?, responsables = ? WHERE id = ?"
+
+    db.query(sql, [nombre, descripcion, fecha_inicio, fecha_fin, responsables, id], function(error, actualizar){
+        if(error){
+            return res.status(404).send('No se pudo actualizar el proyecto');
+        }
+        else{
+            res.status(200).send(actualizar);
+        }
+    });
+});
+
+//BORRAR UN REGISTRO--------------------------------------------------
+app.delete('/api/proyectos/:id', function(req, res){
+    db.query('DELETE FROM proyectos where id = ?', [req.params.id], function(error, borrar){
+        if(error){
+            return res.status(404).send('No se pudo borrar el proyecto');
+        }else{
+            res.status(200).send(borrar);
+            
+        }
+    })
+})
+
 
 // Iniciar el servidor
 app.listen(port, () => {
