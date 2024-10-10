@@ -102,7 +102,7 @@ app.get('/api/proyectos', function(req, res){
         }
     })
 })
-//MOSTRAR UN SOLO REGISTRO--------------------------------------------------
+//MOSTRAR UN SOLO REGISTRO------------------------------------------------- -
 app.get('/api/proyectos/:id', function(req, res){
     db.query('SELECT * FROM proyectos where id = ?', [req.params.id], function(error, proyecto){
         if(error){
