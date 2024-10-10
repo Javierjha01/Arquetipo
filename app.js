@@ -36,7 +36,7 @@ app.post('/api/register', (req, res) => {
             return res.status(500).send('Error al registrar usuario');
         }
 
-        res.status(200).send('Usuario registrado con éxito');
+        res.status(200).send({"statusCode":0, "statusMessage":"Usuario registrado con éxito"});
     });
 });
 
