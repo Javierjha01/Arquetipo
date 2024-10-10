@@ -33,10 +33,10 @@ app.post('/api/register', (req, res) => {
     db.query(query, [username, hashedPassword], (err, result) => {
         if (err) {
             console.error('Error al registrar usuario:', err);
-            return res.status(500).send('Error al registrar usuario');
+            return res.status(500).send({"statusCode":-1, "statusMessage":"Error al registrar usuario"});
         }
 
-        res.status(200).send('Usuario registrado con éxito');
+        res.status(200).send({"statusCode":0, "statusMessage":"Servicio exitoso", "response": registro});
     });
 });
 
