@@ -36,7 +36,7 @@ app.post('/api/register', (req, res) => {
             return res.status(500).send('Error al registrar usuario');
         }
 
-        res.status(201).send('Usuario registrado con éxito');
+        res.status(200).send('Usuario registrado con éxito');
     });
 });
 
@@ -49,20 +49,19 @@ app.post('/api/login', (req, res) => {
     db.query(query, [username], (err, results) => {
         if (err) {
             console.error('Error en la consulta:', err);
-            return res.status(500).send('Error en el servidor');
+            return res.status(500).send({"statusCode":-1, "statusMessage":"Error en el servidor"});
         }
 
-        if (results.length === 0) {
-            return res.status(404).send('Usuario no encontrado');
+        if (results.length == 0) {
+            return res.status(200).send({"statusCode":-1, "statusMessage":"Usuario y/o contraseña incorrectos"});
         }
 
         const user = results[0];
-
         // Comparar la contraseña proporcionada con la almacenada
         const passwordIsValid = bcrypt.compareSync(password, user.password);
 
         if (!passwordIsValid) {
-            return res.status(401).send('Contraseña incorrecta');
+            return res.status(200).send({"statusCode":-1, "statusMessage":"Usuario y/o contraseña incorrectos"});
         }
 
         // Generar un token JWT
@@ -70,7 +69,7 @@ app.post('/api/login', (req, res) => {
             expiresIn: 86400 // 24 horas
         });
 
-        res.status(200).send({ auth: true, token });
+        res.status(200).send({"statusCode":0, "statusMessage":"Servicio exitoso", "response": {auth: true, token}});
     });
 });
 
@@ -97,9 +96,9 @@ app.get('/api/proyectos', function(req, res){
     db.query('SELECT * FROM proyectos', function(error, proyectos){
         if(error){
             //console.log(error);
-            return res.status(404).send('Proyectos no encontrados');
+            return res.status(200).send({"statusCode":-1, "statusMessage":"Proyectos no encontrados"});
         }else{
-            res.status(200).send(proyectos);
+            res.status(200).send({"statusCode":0, "statusMessage":"Servicio exitoso", "response": proyectos});
         }
     })
 })
@@ -107,9 +106,9 @@ app.get('/api/proyectos', function(req, res){
 app.get('/api/proyectos/:id', function(req, res){
     db.query('SELECT * FROM proyectos where id = ?', [req.params.id], function(error, proyecto){
         if(error){
-            return res.status(404).send('Proyecto no encontrado');
+            return res.status(200).send({"statusCode":-1, "statusMessage":"Proyectos no encontrado"});
         }else{
-            res.status(200).send(proyecto);
+            res.status(200).send({"statusCode":0, "statusMessage":"Servicio exitoso", "response": proyecto});
         }
     })
 })
@@ -123,10 +122,10 @@ app.post('/api/proyectos', function(req, res){
     db.query(sql, [nombre, descripcion, fecha_inicio, fecha_fin, responsables], function(error, registro){
         if(error){
             //console.log(error)
-            return res.status(404).send('No se pudo registrar el proyecto');
+            return res.status(200).send({"statusCode":-1, "statusMessage":"No se pudo registrar el proyecto"});
         }
         else{
-            res.status(200).send(registro);
+            res.status(200).send({"statusCode":0, "statusMessage":"Servicio exitoso", "response": registro});
             //console.log(sql)
         }
     })
@@ -144,10 +143,10 @@ app.put('/api/proyectos/:id', function(req, res){
 
     db.query(sql, [nombre, descripcion, fecha_inicio, fecha_fin, responsables, id], function(error, actualizar){
         if(error){
-            return res.status(404).send('No se pudo actualizar el proyecto');
+            return res.status(200).send({"statusCode":-1, "statusMessage":"No se pudo actualizar el proyecto"});
         }
         else{
-            res.status(200).send(actualizar);
+            res.status(200).send({"statusCode":0, "statusMessage":"Actualización exitoso", "response": actualizar});
         }
     });
 });
@@ -156,9 +155,9 @@ app.put('/api/proyectos/:id', function(req, res){
 app.delete('/api/proyectos/:id', function(req, res){
     db.query('DELETE FROM proyectos where id = ?', [req.params.id], function(error, borrar){
         if(error){
-            return res.status(404).send('No se pudo borrar el proyecto');
+            return res.status(200).send({"statusCode":-1, "statusMessage":"No se pudo borrar el proyecto"});
         }else{
-            res.status(200).send(borrar);
+            res.status(200).send({"statusCode":0, "statusMessage":"Se borró con éxito", "response": borrar});
             
         }
     })
